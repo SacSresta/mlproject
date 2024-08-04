@@ -57,6 +57,7 @@ def predict_datapoint():
             results = predict_pipeline.predict(pred_df)
             app.logger.info(f"Prediction results: {results}")
             
+            app.logger.debug(f"Rendering template with results: {results[0]}")
             return render_template('home.html', results=results[0])
         except Exception as e:
             app.logger.error(f"An error occurred: {str(e)}")
