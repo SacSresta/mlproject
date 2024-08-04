@@ -1,12 +1,18 @@
 from flask import Flask, request, render_template
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from src.pipeline.predict_pipeline import CustomData, PredictPipeline
 import logging
 from logging.handlers import RotatingFileHandler
 import traceback
+import sys
 
-# Initialize the Flask application
-app = Flask(__name__)
+# Set up application and logging
+application = Flask(__name__)
+app = application
 
-# Set up logging
+# Configure logging
 handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
 handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -14,7 +20,7 @@ handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.DEBUG)
 
-# Define routes
+# Route for homepage
 @app.route('/')
 def index():
     app.logger.info("Homepage accessed")
@@ -28,26 +34,30 @@ def predict_datapoint():
     else:
         app.logger.info("POST request to /predictdata")
         try:
-            # Log form data
+            # Log form data (be careful not to log sensitive information in production)
             app.logger.debug(f"Form data: {request.form}")
-
-            # Extract form data
-            gender = request.form.get('gender')
-            ethnicity = request.form.get('ethnicity')
-            parental_level_of_education = request.form.get('parental_level_of_education')
-            lunch = request.form.get('lunch')
-            test_preparation_course = request.form.get('test_preparation_course')
-            writing_score = float(request.form.get('writing_score'))
-            reading_score = float(request.form.get('reading_score'))
-
-            # Create data frame or process data for prediction
-            # For demonstration purposes, we're just echoing back the input data
-            prediction = f"Predicted Maths Score based on inputs: {gender}, {ethnicity}, {parental_level_of_education}, {lunch}, {test_preparation_course}, Writing Score: {writing_score}, Reading Score: {reading_score}"
-
-            app.logger.info(f"Prediction result: {prediction}")
-
-            # Render the result
-            return render_template('home.html', results=prediction)
+            
+            data = CustomData(
+                gender=request.form.get('gender'),
+                race_ethnicity=request.form.get('ethnicity'),
+                parental_level_of_education=request.form.get('parental_level_of_education'),
+                lunch=request.form.get('lunch'),
+                test_preparation_course=request.form.get('test_preparation_course'),
+                reading_score=float(request.form.get('writing_score')),
+                writing_score=float(request.form.get('reading_score'))
+            )
+            app.logger.debug(f"CustomData object created: {data.__dict__}")
+            
+            pred_df = data.get_data_as_data_frame()
+            app.logger.debug(f"Prediction dataframe: {pred_df.to_dict()}")
+            
+            predict_pipeline = PredictPipeline()
+            app.logger.debug("PredictPipeline object created")
+            
+            results = predict_pipeline.predict(pred_df)
+            app.logger.info(f"Prediction results: {results}")
+            
+            return render_template('home.html', results=results[0])
         except Exception as e:
             app.logger.error(f"An error occurred: {str(e)}")
             app.logger.error(traceback.format_exc())
@@ -55,3 +65,4 @@ def predict_datapoint():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
+    # In production, you might want to set debug=False
