@@ -61,7 +61,7 @@ def predict_datapoint():
         except Exception as e:
             app.logger.error(f"An error occurred: {str(e)}")
             app.logger.error(traceback.format_exc())
-            return render_template('home.html', error="An error occurred during prediction. Please try again."), 500
+            return render_template('home.html', error=f"An error occurred during prediction. Please try again.{str(e)}"), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
