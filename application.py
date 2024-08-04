@@ -6,7 +6,6 @@ from src.pipeline.predict_pipeline import CustomData, PredictPipeline
 import logging
 from logging.handlers import RotatingFileHandler
 import traceback
-import sys
 
 # Set up application and logging
 application = Flask(__name__)
@@ -24,7 +23,7 @@ app.logger.setLevel(logging.DEBUG)
 @app.route('/')
 def index():
     app.logger.info("Homepage accessed")
-    return render_template('index.html')
+    return render_template('home.html')
 
 @app.route('/predictdata', methods=['GET', 'POST'])
 def predict_datapoint():
@@ -43,8 +42,8 @@ def predict_datapoint():
                 parental_level_of_education=request.form.get('parental_level_of_education'),
                 lunch=request.form.get('lunch'),
                 test_preparation_course=request.form.get('test_preparation_course'),
-                reading_score=float(request.form.get('writing_score')),
-                writing_score=float(request.form.get('reading_score'))
+                reading_score=float(request.form.get('reading_score')),
+                writing_score=float(request.form.get('writing_score'))
             )
             app.logger.debug(f"CustomData object created: {data.__dict__}")
             
@@ -66,4 +65,3 @@ def predict_datapoint():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
-    # In production, you might want to set debug=False
