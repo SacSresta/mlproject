@@ -64,5 +64,5 @@ def predict_datapoint():
             return render_template('home.html', error=f"An error occurred during prediction. Please try again.{str(e)}"), 500
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=True, port = 8000)
     # In production, you might want to set debug=False
